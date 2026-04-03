@@ -34,7 +34,7 @@ const UserSchema =new mongoose.Schema({
     type :String
   },
   watchHistory:[{
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref : "video"
 
   }],
@@ -46,13 +46,12 @@ const UserSchema =new mongoose.Schema({
     type :String
   }
 },{timestamps:true});
-UserSchema.pre("save",async function (next)
+UserSchema.pre("save",async function ()
 {
   if(!this.isModified("password")){
-   return next();
+   return ;
   }
-  this.password = await  bcrypt.hash(this.password,10)
-  next();
+  this.password =  await bcrypt.hash(this.password,10);
 })
   UserSchema.methods.isPasswordCorrect = async function(password){
     return await bcrypt.compare(password,this.password)
