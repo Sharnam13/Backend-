@@ -80,20 +80,20 @@ const registerUser=asyncHandler(async(req,res) =>{
     }
     return res.status(201).json(new ApiResponse(201,createdUser,"User created successfully"))
   })
-const loginUser=asyncHandler(async(req,res) =>{
+const loginUser=asyncHandler(async (req,res) =>{
   //get email password from frontend
   //check email exist or not
   //check password correct or not
   //generate access token and refresg token
   //store refresh token in db
   //return response with access token and user details except password and refresh token
-  [email,username,password]=req.body;
-  if(!username || !email)
+const { userName, email, password } = req.body
+  if(!(userName || email))
   {
     throw new ApiError(400,"Email and username are required")
   }
   const user=await User.findOne({
-    $or:[{email},{username}]
+    $or:[{email},{userName}]
  } )
  if(!user)
   {
@@ -105,13 +105,13 @@ const loginUser=asyncHandler(async(req,res) =>{
     throw new ApiError(401,"Invalid credentials")
   }
   const {accessToken,refreshToken}=await generateAccessAndRefreshToken(user._id)
-  const loggedInUser=await User.findById(user._id).select("-password -refeshToken")
+  const loggedInUser=await User.findById(user._id).select("-password -refreshToken")
   
   const options={
     httpOnly:true,
-    secure: true
+    secure: false
   }
-  return res.status(200).cookie("acessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(new ApiResponse(200,{user:loggedInUser,accessToken,refreshToken},"Login successful"))
+  return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(new ApiResponse(200,{user:loggedInUser,accessToken,refreshToken},"Login successful"))
 
   }
 )
@@ -128,7 +128,7 @@ const logoutUser=asyncHandler(async(req,res)=>{
   )
   const options={
     httpOnly:true,
-    secure: true
+    secure: false
   }
   return  res.status(200).clearCookie("accessToken",options).clearCookie("refreshToken",options).json(new ApiResponse(200,{},"Logout successful")) 
 })
